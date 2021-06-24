@@ -14,6 +14,7 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception {
+
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest) msg;
             String host = request.headers().get("host");
@@ -28,13 +29,14 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
             }
             this.host = temp[0];
             this.port = port;
-            if ("CONNECT".equalsIgnoreCase(request.method().name())) {//HTTPS建立代理握手
-                HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, NettyHttpProxyServer.SUCCESS);
-                ctx.writeAndFlush(response);
-                ctx.pipeline().remove("httpCodec");
-                ctx.pipeline().remove("httpObject");
-                return;
-            }
+//            if ("CONNECT".equalsIgnoreCase(request.method().name())) {//HTTPS建立代理握手
+//                HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, NettyHttpProxyServer.SUCCESS);
+//                System.out.println(response);
+//                ctx.writeAndFlush(response);
+//                ctx.pipeline().remove("httpCodec");
+//                ctx.pipeline().remove("httpObject");
+//                return;
+//            }
             //连接至目标服务器
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(ctx.channel().eventLoop()) // 注册线程池
@@ -43,6 +45,7 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
 
             ChannelFuture cf = bootstrap.connect(temp[0], port);
             cf.addListener(new ChannelFutureListener() {
+                @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
                         future.channel().writeAndFlush(msg);
@@ -67,6 +70,7 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
                                     @Override
                                     public void channelRead(ChannelHandlerContext ctx0, Object msg) throws Exception {
                                         ctx.channel().writeAndFlush(msg);
+                                        System.out.println(msg);
                                     }
                                 });
                             }

@@ -1,0 +1,9 @@
+/shelf/
+/workspace.xml
+# Intellij
+*.iml
+# Keystore files
+*.jks
+*.class
+target/
+*.log

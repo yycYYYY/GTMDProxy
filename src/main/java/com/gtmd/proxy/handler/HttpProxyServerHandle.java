@@ -41,7 +41,7 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(ctx.channel().eventLoop()) // 注册线程池
                     .channel(ctx.channel().getClass()) // 使用NioSocketChannel来作为连接用的channel类
-                    .handler(new HttpProxyInitializer(ctx.channel()));
+                    .handler(new ProxyChannelInitializer(ctx.channel()));
 
             ChannelFuture cf = bootstrap.connect(temp[0], port);
             cf.addListener(new ChannelFutureListener() {
@@ -77,6 +77,7 @@ public class HttpProxyServerHandle extends ChannelInboundHandlerAdapter {
                         });
                 cf = bootstrap.connect(host, port);
                 cf.addListener(new ChannelFutureListener() {
+                    @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if (future.isSuccess()) {
                             future.channel().writeAndFlush(msg);

@@ -5,5 +5,5 @@
 # Keystore files
 *.jks
 *.class
-target/
+/target/
 *.log

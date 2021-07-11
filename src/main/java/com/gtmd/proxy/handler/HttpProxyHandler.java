@@ -14,6 +14,10 @@ import static com.gtmd.proxy.utils.RequestUtil.REQUEST_INFO_KEY;
 public class HttpProxyHandler extends ChannelInboundHandlerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(HttpProxyHandler.class);
 
+    private ChannelFuture cf;
+    private String host;
+    private int port;
+
     public final static HttpResponseStatus CONNECT_SUCCESS = new HttpResponseStatus(200,
             "Connection established");
 

@@ -29,9 +29,9 @@ public class ProxyChannelInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline().addLast("httpCodec", new HttpServerCodec());
         ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536));
-        ch.pipeline().addLast("httpHandler", new HttpProxyServerHandle());
-        ch.pipeline().addLast("httpsHandler", new HttpProxyServerHandle());
-        ch.pipeline().addLast("socksHandler", new HttpProxyServerHandle());
-        ch.pipeline().addLast("udpHandler", new HttpProxyServerHandle());
+        ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler());
+        ch.pipeline().addLast("httpsHandler", new HttpProxyServerHandler());
+        ch.pipeline().addLast("socksHandler", new HttpProxyServerHandler());
+        ch.pipeline().addLast("udpHandler", new HttpProxyServerHandler());
     }
 }

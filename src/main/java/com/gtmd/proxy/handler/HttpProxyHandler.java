@@ -4,6 +4,7 @@ import com.gtmd.proxy.model.RequestInfo;
 import com.gtmd.proxy.utils.RequestUtil;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.proxy.ProxyHandler;
 import io.netty.util.Attribute;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
@@ -46,8 +47,14 @@ public class HttpProxyHandler extends ChannelInboundHandlerAdapter {
             handlerHttpProto(ctx.channel(), msg, requestInfo.isHttps());
 
         }
+
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        ctx.close();
+    }
 
     /**
      * 处理连接报文

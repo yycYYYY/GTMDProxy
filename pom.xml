@@ -56,12 +56,13 @@
             <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
-        <!-- 命令行插件 -->
+        <!-- 命令行参数解析插件 https://mvnrepository.com/artifact/info.picocli/picocli -->
         <dependency>
-            <groupId>args4j</groupId>
-            <artifactId>args4j</artifactId>
-            <version>2.33</version>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.6.1</version>
         </dependency>
+
     </dependencies>
 
 </project>

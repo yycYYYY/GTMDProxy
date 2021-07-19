@@ -1,5 +1,6 @@
 package com.gtmd.proxy.cli;
 
+import com.gtmd.proxy.server.ProxyServer;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
@@ -8,13 +9,16 @@ import picocli.CommandLine.*;
  **/
 @Command(name = "ProxyCli")
 public class ProxyCli implements Runnable{
+
+    ProxyServer server = new ProxyServer();
     
-    @Option(names = {"-t", "--type"}, required = true, description = "The server type.")
+    @Option(names = {"-t", "--type"}, required = false, description = "The server type.")
     String type;
 
     @Override
     public void run() {
-        System.out.println("hello" + type);
+        System.out.println("$$GTMD$$ Proxy server start at port: 8088");
+        server.init(8088);
     }
 
     public static void main(String[] args) {

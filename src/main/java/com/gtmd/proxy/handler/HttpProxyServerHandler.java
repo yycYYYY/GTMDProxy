@@ -21,6 +21,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
 
     public final static HttpResponseStatus CONNECT_SUCCESS = new HttpResponseStatus(200,
             "Connection established");
+    public final static String CONNECT_METHOD_NAME = "CONNECT";
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -41,7 +42,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             this.port = requestInfo.getPort();
 
             String methodName = httpRequest.method().name();
-            if ("CONNECT".equalsIgnoreCase(methodName)){
+            if (CONNECT_METHOD_NAME.equalsIgnoreCase(methodName)){
                 handlerConnectProto(ctx);
                 ReferenceCountUtil.release(msg);
                 return;
@@ -76,29 +77,29 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (isHttp){
             //连接至目标服务器
             Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(channel.eventLoop()) // 注册线程池
-                    .channel(channel.getClass()) // 使用NioSocketChannel来作为连接用的channel类
+            //注册线程池
+            bootstrap.group(channel.eventLoop())
+                    // 使用NioSocketChannel来作为连接用的channel类
+                    .channel(channel.getClass())
                     .handler(new ProxyChannelInitializer(channel));
 
             ChannelFuture cf = bootstrap.connect(host, port);
-            cf.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    if (future.isSuccess()) {
-                        channel.writeAndFlush(msg);
-                    } else {
-                        channel.close();
-                    }
+            cf.addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    channel.writeAndFlush(msg);
+                } else {
+                    channel.close();
                 }
             });
-//            ChannelFuture cf = bootstrap.connect(temp[0], port).sync();
-//            cf.channel().writeAndFlush(request);
+
         }else {
             if (cf == null) {
                 //连接至目标服务器
                 Bootstrap bootstrap = new Bootstrap();
-                bootstrap.group(channel.eventLoop()) // 复用客户端连接线程池
-                        .channel(channel.getClass()) // 使用NioSocketChannel来作为连接用的channel类
+                // 复用客户端连接线程池
+                bootstrap.group(channel.eventLoop())
+                        // 使用NioSocketChannel来作为连接用的channel类
+                        .channel(channel.getClass())
                         .handler(new ChannelInitializer() {
 
                             @Override
@@ -113,14 +114,11 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                             }
                         });
                 cf = bootstrap.connect(host, port);
-                cf.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        if (future.isSuccess()) {
-                            future.channel().writeAndFlush(msg);
-                        } else {
-                            channel.close();
-                        }
+                cf.addListener((ChannelFutureListener) future -> {
+                    if (future.isSuccess()) {
+                        future.channel().writeAndFlush(msg);
+                    } else {
+                        channel.close();
                     }
                 });
             } else {

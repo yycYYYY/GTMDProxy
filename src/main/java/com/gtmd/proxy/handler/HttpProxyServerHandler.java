@@ -1,16 +1,26 @@
 package com.gtmd.proxy.handler;
 
+import com.gtmd.proxy.constants.ProtoName;
+import com.gtmd.proxy.model.ProxyInfo;
 import com.gtmd.proxy.model.RequestInfo;
+import com.gtmd.proxy.server.ProxyServer;
 import com.gtmd.proxy.utils.RequestUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.proxy.HttpProxyHandler;
+import io.netty.handler.proxy.ProxyHandler;
+import io.netty.handler.proxy.Socks4ProxyHandler;
+import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.util.Attribute;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.gtmd.proxy.utils.RequestUtil.REQUEST_INFO_KEY;
+import java.net.InetSocketAddress;
+import java.util.Deque;
+import java.util.List;
+
 
 public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(HttpProxyServerHandler.class);
@@ -18,9 +28,12 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private ChannelFuture cf;
     private String host;
     private int port;
+    private Deque<Object> pendingQueue;
+    private ProxyInfo proxyInfo;
+    private boolean isConnect;
 
-    public final static HttpResponseStatus CONNECT_SUCCESS = new HttpResponseStatus(200,
-            "Connection established");
+    public final static HttpResponse CONNECT_SUCCESS_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            new HttpResponseStatus(200, "Connection established"));
     public final static String CONNECT_METHOD_NAME = "CONNECT";
 
     @Override
@@ -33,7 +46,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             if (requestInfo == null) {
 
                 requestInfo = RequestUtil.getRequestInfo(httpRequest);
-                Attribute<RequestInfo> requestInfoAttr = ctx.channel().attr(REQUEST_INFO_KEY);
+                Attribute<RequestInfo> requestInfoAttr = ctx.channel().attr(RequestUtil.REQUEST_INFO_KEY);
                 //将requestInfo保存到channel中，这样不需要每一个请求都去解析保存请求信息
                 requestInfoAttr.setIfAbsent(requestInfo);
             }
@@ -43,12 +56,13 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
 
             String methodName = httpRequest.method().name();
             if (CONNECT_METHOD_NAME.equalsIgnoreCase(methodName)){
-                handlerConnectProto(ctx);
+                handleConnectProto(ctx);
                 ReferenceCountUtil.release(msg);
                 return;
             }
 
-            handlerHttpProto(ctx.channel(), msg, requestInfo.isHttps());
+            //TODO： proxyInfo缺少初始化
+            handleHttpProto(ctx.channel(), msg, proxyInfo);
 
         }
     }
@@ -58,9 +72,8 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
      * 处理连接报文
      * @param ctx 上下文
      */
-    private void handlerConnectProto(ChannelHandlerContext ctx) {
-            HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, CONNECT_SUCCESS);
-            ctx.writeAndFlush(response);
+    private void handleConnectProto(ChannelHandlerContext ctx) {
+            ctx.writeAndFlush(CONNECT_SUCCESS_RESPONSE);
             ctx.channel().pipeline().remove("httpRequestDecoder");
             ctx.channel().pipeline().remove("httpResponseEncoder");
             ctx.channel().pipeline().remove("httpAggregator");
@@ -71,60 +84,69 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
      * 处理http/https报文转发
      * @param channel
      * @param msg
-     * @param isHttp
      */
-    private void handlerHttpProto(Channel channel, Object msg, boolean isHttp){
-        if (isHttp){
-            //连接至目标服务器
-            Bootstrap bootstrap = new Bootstrap();
-            //注册线程池
-            bootstrap.group(channel.eventLoop())
-                    // 使用NioSocketChannel来作为连接用的channel类
-                    .channel(channel.getClass())
-                    .handler(new ProxyChannelInitializer(channel));
+    private void handleHttpProto(Channel channel, Object msg, ProxyInfo proxyInfo){
 
-            ChannelFuture cf = bootstrap.connect(host, port);
+        RequestInfo requestInfo = proxyInfo.getRequestInfo();
+
+        if (cf == null){
+
+            ProxyHandler proxyHandler = buildProxyHandler(proxyInfo);
+            Bootstrap b = new Bootstrap();
+            b
+                    .group(channel.eventLoop())
+                    .channel(channel.getClass())
+                    .handler(proxyHandler);
+
+            cf = b.connect(requestInfo.getHost(), requestInfo.getPort());
             cf.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
-                    channel.writeAndFlush(msg);
+                    future.channel().writeAndFlush(msg);
+                    synchronized (pendingQueue) {
+                        pendingQueue.forEach(obj -> future.channel().writeAndFlush(obj));
+                        pendingQueue.clear();
+                        isConnect = true;
+                    }
                 } else {
+                    pendingQueue.forEach(obj -> ReferenceCountUtil.release(obj));
+                    pendingQueue.clear();
+                    future.channel().close();
                     channel.close();
                 }
             });
 
         }else {
-            if (cf == null) {
-                //连接至目标服务器
-                Bootstrap bootstrap = new Bootstrap();
-                // 复用客户端连接线程池
-                bootstrap.group(channel.eventLoop())
-                        // 使用NioSocketChannel来作为连接用的channel类
-                        .channel(channel.getClass())
-                        .handler(new ChannelInitializer() {
-
-                            @Override
-                            protected void initChannel(Channel ch) throws Exception {
-                                ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
-                                    @Override
-                                    public void channelRead(ChannelHandlerContext ctx0, Object msg) throws Exception {
-                                       channel.writeAndFlush(msg);
-                                        System.out.println(msg);
-                                    }
-                                });
-                            }
-                        });
-                cf = bootstrap.connect(host, port);
-                cf.addListener((ChannelFutureListener) future -> {
-                    if (future.isSuccess()) {
-                        future.channel().writeAndFlush(msg);
-                    } else {
-                        channel.close();
-                    }
-                });
-            } else {
-                cf.channel().writeAndFlush(msg);
+            synchronized (pendingQueue){
+                if (isConnect){
+                    cf.channel().writeAndFlush(msg);
+                }else {
+                    pendingQueue.add(msg);
+                }
             }
         }
+
     }
 
+    private ProxyHandler buildProxyHandler(ProxyInfo proxyInfo){
+
+        ProxyHandler proxyHandler;
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(proxyInfo.getRequestInfo().getHost(), proxyInfo.getRequestInfo().getPort());
+        switch (proxyInfo.getProxyType()){
+            case ProtoName.HTTP:
+                proxyHandler = new HttpProxyHandler(inetSocketAddress);
+                break;
+
+            case ProtoName.SOCKET4:
+                proxyHandler = new Socks4ProxyHandler(inetSocketAddress);
+                break;
+
+            case ProtoName.SOCKET5:
+                proxyHandler = new Socks5ProxyHandler(inetSocketAddress);
+                break;
+
+            default:
+                throw new RuntimeException("不支持的协议");
+        }
+        return proxyHandler;
+    }
 }

@@ -3,9 +3,9 @@ package com.gtmd.proxy.handler;
 import com.gtmd.proxy.constants.ProtoName;
 import com.gtmd.proxy.model.ProxyInfo;
 import com.gtmd.proxy.model.RequestInfo;
-import com.gtmd.proxy.server.ProxyServer;
 import com.gtmd.proxy.utils.RequestUtil;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.proxy.HttpProxyHandler;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Deque;
-import java.util.List;
+
 
 
 public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
@@ -31,6 +31,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private Deque<Object> pendingQueue;
     private ProxyInfo proxyInfo;
     private boolean isConnect;
+    private RequestInfo requestInfo;
 
     public final static HttpResponse CONNECT_SUCCESS_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             new HttpResponseStatus(200, "Connection established"));
@@ -42,7 +43,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) msg;
 
-            RequestInfo requestInfo = RequestUtil.getRequestInfoByAttr(ctx.channel());
+            requestInfo = RequestUtil.getRequestInfoByAttr(ctx.channel());
             if (requestInfo == null) {
 
                 requestInfo = RequestUtil.getRequestInfo(httpRequest);
@@ -61,10 +62,22 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            //TODO： proxyInfo缺少初始化
-            handleHttpProto(ctx.channel(), msg, proxyInfo);
 
+
+        }else if (msg instanceof HttpContent){
+            //处理HttpContent
+        }else {
+            //ssl和socket
+            ByteBuf byteBuf = (ByteBuf) msg;
+            // ssl握手
+            if (byteBuf.getByte(0) == 22) {
+                logger.debug("[do ssl hands]");
+            }
         }
+
+
+        //TODO： proxyInfo缺少初始化
+        handleHttpProto(ctx.channel(), msg, proxyInfo);
     }
 
 
@@ -108,7 +121,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                         isConnect = true;
                     }
                 } else {
-                    pendingQueue.forEach(obj -> ReferenceCountUtil.release(obj));
+                    pendingQueue.forEach(ReferenceCountUtil::release);
                     pendingQueue.clear();
                     future.channel().close();
                     channel.close();

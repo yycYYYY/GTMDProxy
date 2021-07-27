@@ -106,6 +106,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
 
             ProxyHandler proxyHandler = buildProxyHandler(proxyInfo);
             Bootstrap b = new Bootstrap();
+
             b
                     .group(channel.eventLoop())
                     .channel(channel.getClass())

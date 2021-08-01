@@ -1,15 +1,8 @@
 package com.gtmd.proxy.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serializable;
 import java.util.Objects;
 
-@Getter
-@Setter
-@AllArgsConstructor
 public class RequestInfo implements Serializable {
 
     private static final long serialVersionUID = 7312279956235006792L;
@@ -17,6 +10,15 @@ public class RequestInfo implements Serializable {
     private String host;
     private int port;
     private boolean isHttps;
+
+    public RequestInfo() {
+    }
+
+    public RequestInfo(String host, int port, boolean isHttps) {
+        this.host = host;
+        this.port = port;
+        this.isHttps = isHttps;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -33,5 +35,29 @@ public class RequestInfo implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(host, port, isHttps);
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public boolean isHttps() {
+        return isHttps;
+    }
+
+    public void setHttps(boolean https) {
+        isHttps = https;
     }
 }

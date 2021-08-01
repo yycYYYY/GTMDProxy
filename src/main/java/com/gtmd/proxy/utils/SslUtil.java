@@ -3,8 +3,6 @@ package com.gtmd.proxy.utils;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import lombok.Getter;
-import lombok.Setter;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -26,8 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Getter
-@Setter
+
 public class SslUtil {
     /**
      * 证书
@@ -78,6 +75,86 @@ public class SslUtil {
             sslUtil = new SslUtil();
         }
         return sslUtil;
+    }
+
+    public SslContext getSslContext() {
+        return sslContext;
+    }
+
+    public void setSslContext(SslContext sslContext) {
+        this.sslContext = sslContext;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public Date getCaNotBefore() {
+        return caNotBefore;
+    }
+
+    public void setCaNotBefore(Date caNotBefore) {
+        this.caNotBefore = caNotBefore;
+    }
+
+    public Date getCaNotAfter() {
+        return caNotAfter;
+    }
+
+    public void setCaNotAfter(Date caNotAfter) {
+        this.caNotAfter = caNotAfter;
+    }
+
+    public PrivateKey getCaPriKey() {
+        return caPriKey;
+    }
+
+    public void setCaPriKey(PrivateKey caPriKey) {
+        this.caPriKey = caPriKey;
+    }
+
+    public PrivateKey getServerPriKey() {
+        return serverPriKey;
+    }
+
+    public void setServerPriKey(PrivateKey serverPriKey) {
+        this.serverPriKey = serverPriKey;
+    }
+
+    public PublicKey getServerPubKey() {
+        return serverPubKey;
+    }
+
+    public void setServerPubKey(PublicKey serverPubKey) {
+        this.serverPubKey = serverPubKey;
+    }
+
+    public Map<String, X509Certificate> getCertCache() {
+        return certCache;
+    }
+
+    public void setCertCache(Map<String, X509Certificate> certCache) {
+        this.certCache = certCache;
+    }
+
+    public KeyFactory getKeyFactory() {
+        return keyFactory;
+    }
+
+    public void setKeyFactory(KeyFactory keyFactory) {
+        this.keyFactory = keyFactory;
+    }
+
+    public static SslUtil getSslUtil() {
+        return sslUtil;
+    }
+
+    public static void setSslUtil(SslUtil sslUtil) {
+        SslUtil.sslUtil = sslUtil;
     }
 
     private void initHttpsConfig() {

@@ -1,6 +1,7 @@
 package com.gtmd.proxy.handler;
 
-import com.gtmd.proxy.constants.ProtoName;
+
+import com.gtmd.proxy.interceptor.InterceptorInitializer;
 import com.gtmd.proxy.model.ProxyInfo;
 import com.gtmd.proxy.model.RequestInfo;
 import com.gtmd.proxy.utils.RequestUtil;
@@ -21,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.util.Deque;
 
 
-
 public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(HttpProxyServerHandler.class);
 
@@ -32,10 +32,15 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private ProxyInfo proxyInfo;
     private boolean isConnect;
     private RequestInfo requestInfo;
+    private InterceptorInitializer interceptorInitializer = new InterceptorInitializer();
 
     public final static HttpResponse CONNECT_SUCCESS_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             new HttpResponseStatus(200, "Connection established"));
     public final static String CONNECT_METHOD_NAME = "CONNECT";
+
+    public HttpProxyServerHandler(ProxyInfo proxyInfo) {
+        this.proxyInfo = proxyInfo;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -43,7 +48,10 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) msg;
 
+            logger.debug("uri:{}, method:{}",httpRequest.uri(),httpRequest.method());
+
             requestInfo = RequestUtil.getRequestInfoByAttr(ctx.channel());
+            logger.debug("host:{}, port:{}, isHttp:{}",requestInfo.getHost(),requestInfo.getPort(),requestInfo.isHttps());
             if (requestInfo == null) {
 
                 requestInfo = RequestUtil.getRequestInfo(httpRequest);
@@ -59,10 +67,11 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             if (CONNECT_METHOD_NAME.equalsIgnoreCase(methodName)){
                 handleConnectProto(ctx);
                 ReferenceCountUtil.release(msg);
+                logger.debug("connect success!");
                 return;
             }
-
-
+            //注意这里的赋值位置可能有问题
+            proxyInfo.setRequestInfo(requestInfo);
 
         }else if (msg instanceof HttpContent){
             //处理HttpContent
@@ -146,15 +155,15 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         ProxyHandler proxyHandler;
         InetSocketAddress inetSocketAddress = new InetSocketAddress(proxyInfo.getRequestInfo().getHost(), proxyInfo.getRequestInfo().getPort());
         switch (proxyInfo.getProxyType()){
-            case ProtoName.HTTP:
+            case HTTP:
                 proxyHandler = new HttpProxyHandler(inetSocketAddress);
                 break;
 
-            case ProtoName.SOCKET4:
+            case SOCKET4:
                 proxyHandler = new Socks4ProxyHandler(inetSocketAddress);
                 break;
 
-            case ProtoName.SOCKET5:
+            case SOCKET5:
                 proxyHandler = new Socks5ProxyHandler(inetSocketAddress);
                 break;
 

@@ -1,10 +1,14 @@
 package com.gtmd.proxy.server;
 
+import com.gtmd.proxy.handler.HttpProxyServerHandler;
 import com.gtmd.proxy.handler.ProxyChannelInitializer;
+import com.gtmd.proxy.model.ProxyInfo;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
@@ -17,7 +21,12 @@ public class ProxyServer {
 
     private final static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
-    public void init(int port){
+    private void init(){
+
+    }
+
+    public void start(int port){
+        ProxyInfo proxyInfo = new ProxyInfo();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -30,7 +39,15 @@ public class ProxyServer {
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.AUTO_READ, false)
 
-                    .childHandler(new ProxyChannelInitializer());
+//                    .childHandler(new ProxyChannelInitializer());
+                    .childHandler(new ChannelInitializer(){
+                        @Override
+                        protected void initChannel(Channel ch) throws Exception {
+                            ch.pipeline().addLast("httpCodec", new HttpServerCodec());
+                            ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536));
+                            ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler(proxyInfo));
+                        }
+                    });
 
             ChannelFuture f = b.bind(port).sync();
             logger.info("Proxy server start on port: {}", port);
@@ -47,6 +64,6 @@ public class ProxyServer {
 
     public static void main(String[] args) {
         ProxyServer server = new ProxyServer();
-        server.init(8080);
+        server.start(6667);
     }
 }

@@ -1,8 +1,7 @@
-package com.gtmd.proxy.server;
+package com.github.yycYYYY.gtmd.server;
 
-import com.gtmd.proxy.handler.HttpProxyServerHandler;
-import com.gtmd.proxy.handler.ProxyChannelInitializer;
-import com.gtmd.proxy.model.ProxyInfo;
+import com.github.yycYYYY.gtmd.model.ProxyInfo;
+import com.github.yycYYYY.gtmd.handler.HttpProxyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;

@@ -1,4 +1,4 @@
-package com.gtmd.proxy.model;
+package com.github.yycYYYY.gtmd.model;
 
 import java.io.Serializable;
 import java.util.Objects;

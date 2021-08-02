@@ -1,10 +1,10 @@
-package com.gtmd.proxy.handler;
+package com.github.yycYYYY.gtmd.handler;
 
 
-import com.gtmd.proxy.interceptor.InterceptorInitializer;
-import com.gtmd.proxy.model.ProxyInfo;
-import com.gtmd.proxy.model.RequestInfo;
-import com.gtmd.proxy.utils.RequestUtil;
+import com.github.yycYYYY.gtmd.interceptor.InterceptorInitializer;
+import com.github.yycYYYY.gtmd.model.ProxyInfo;
+import com.github.yycYYYY.gtmd.model.RequestInfo;
+import com.github.yycYYYY.gtmd.utils.RequestUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;

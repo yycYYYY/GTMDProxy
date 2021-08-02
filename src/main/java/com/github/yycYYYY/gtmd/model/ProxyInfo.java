@@ -1,6 +1,6 @@
-package com.gtmd.proxy.model;
+package com.github.yycYYYY.gtmd.model;
 
-import com.gtmd.proxy.constants.ServerType;
+import com.github.yycYYYY.gtmd.constants.ServerType;
 
 import java.io.Serializable;
 import java.util.Objects;

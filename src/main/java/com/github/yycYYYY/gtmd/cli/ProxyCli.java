@@ -1,6 +1,6 @@
-package com.gtmd.proxy.cli;
+package com.github.yycYYYY.gtmd.cli;
 
-import com.gtmd.proxy.server.ProxyServer;
+import com.github.yycYYYY.gtmd.server.ProxyServer;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
@@ -18,7 +18,7 @@ public class ProxyCli implements Runnable{
     @Override
     public void run() {
         System.out.println("$$GTMD$$ Proxy server start at port: 8088");
-        server.init(8088);
+        server.start(8088);
     }
 
     public static void main(String[] args) {

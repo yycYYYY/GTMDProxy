@@ -1,4 +1,4 @@
-package com.gtmd.proxy.handler;
+package com.github.yycYYYY.gtmd.handler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;

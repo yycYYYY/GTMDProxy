@@ -85,8 +85,11 @@ public class MyResponseInterceptor extends DefaultResponseInterceptor {
         httpResponse.setStatus(HttpResponseStatus.OK);
         httpResponse.content().writeBytes("success".getBytes());
     }
-}```
+}
+```
+
 ### 3、域名转发
+
 ```java
 public class ForwardInterceptor extends DefaultRequestInterceptor {
 

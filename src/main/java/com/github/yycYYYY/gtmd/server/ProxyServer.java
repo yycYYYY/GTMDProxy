@@ -1,5 +1,6 @@
 package com.github.yycYYYY.gtmd.server;
 
+import com.github.yycYYYY.gtmd.interceptor.InterceptorInitializer;
 import com.github.yycYYYY.gtmd.model.ProxyInfo;
 import com.github.yycYYYY.gtmd.handler.HttpProxyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -19,6 +20,13 @@ import org.slf4j.LoggerFactory;
 public class ProxyServer {
 
     private final static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+
+    private InterceptorInitializer interceptorInitializer;
+
+    public ProxyServer interceptorInitializer(InterceptorInitializer interceptorInitializer){
+        this.interceptorInitializer = interceptorInitializer;
+        return this;
+    }
 
     private void init(){
 
@@ -44,7 +52,7 @@ public class ProxyServer {
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline().addLast("httpCodec", new HttpServerCodec());
                             ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536));
-                            ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler(proxyInfo));
+                            ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler(proxyInfo, interceptorInitializer));
                         }
                     });
 

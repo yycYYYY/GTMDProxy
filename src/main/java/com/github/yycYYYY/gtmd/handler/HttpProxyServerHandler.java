@@ -30,16 +30,17 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private int port;
     private Deque<Object> pendingQueue;
     private ProxyInfo proxyInfo;
+    private InterceptorInitializer interceptorInitializer;
     private boolean isConnect;
     private RequestInfo requestInfo;
-    private InterceptorInitializer interceptorInitializer = new InterceptorInitializer();
 
     public final static HttpResponse CONNECT_SUCCESS_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             new HttpResponseStatus(200, "Connection established"));
     public final static String CONNECT_METHOD_NAME = "CONNECT";
 
-    public HttpProxyServerHandler(ProxyInfo proxyInfo) {
+    public HttpProxyServerHandler(ProxyInfo proxyInfo, InterceptorInitializer interceptorInitializer) {
         this.proxyInfo = proxyInfo;
+        this.interceptorInitializer = interceptorInitializer;
     }
 
     @Override
@@ -84,7 +85,6 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             }
         }
 
-
         //TODO： proxyInfo缺少初始化
         handleHttpProto(ctx.channel(), msg, proxyInfo);
     }
@@ -114,14 +114,14 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (cf == null){
 
             ProxyHandler proxyHandler = buildProxyHandler(proxyInfo);
-            Bootstrap b = new Bootstrap();
+            Bootstrap bootstrap = new Bootstrap();
 
-            b
-                    .group(channel.eventLoop())
+            bootstrap.group(channel.eventLoop())
                     .channel(channel.getClass())
                     .handler(proxyHandler);
 
-            cf = b.connect(requestInfo.getHost(), requestInfo.getPort());
+            cf = bootstrap.connect(requestInfo.getHost(), requestInfo.getPort());
+
             cf.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     future.channel().writeAndFlush(msg);
@@ -168,7 +168,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                 break;
 
             default:
-                throw new RuntimeException("不支持的协议");
+                throw new RuntimeException("[unknown protocol]不支持的协议");
         }
         return proxyHandler;
     }

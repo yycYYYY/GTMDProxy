@@ -14,12 +14,12 @@ public abstract class DefaultResponseInterceptor implements ProxyInterceptor {
     private boolean isMatch;
 
     @Override
-    public void beforeRequest(Channel clientChannel, HttpRequest httpRequest, InterceptotPipeline pipeline) throws Exception {
+    public final void beforeRequest(Channel clientChannel, HttpRequest httpRequest, InterceptotPipeline pipeline) throws Exception {
 
     }
 
     @Override
-    public void afterResponse(Channel clientChannel, Channel proxyChannel, HttpResponse httpResponse, InterceptotPipeline pipeline) throws Exception {
+    public final void afterResponse(Channel clientChannel, Channel proxyChannel, HttpResponse httpResponse, InterceptotPipeline pipeline) throws Exception {
         if (httpResponse instanceof FullHttpResponse) {
             FullHttpResponse fullHttpResponse = (FullHttpResponse) httpResponse;
             // 判断是第一个处理FullResponse的拦截器是否匹配

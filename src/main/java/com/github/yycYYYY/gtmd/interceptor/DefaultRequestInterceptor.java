@@ -11,7 +11,7 @@ public abstract class DefaultRequestInterceptor implements ProxyInterceptor {
     public static final int MAX_CONTENT_LENGTH = 1024 * 1024 * 8;
 
     @Override
-    public void beforeRequest(Channel clientChannel, HttpRequest httpRequest, InterceptotPipeline pipeline) throws Exception {
+    public final void beforeRequest(Channel clientChannel, HttpRequest httpRequest, InterceptotPipeline pipeline) throws Exception {
         if (httpRequest instanceof FullHttpRequest) {
             FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
             handleRequest(fullHttpRequest, pipeline);
@@ -35,7 +35,7 @@ public abstract class DefaultRequestInterceptor implements ProxyInterceptor {
     }
 
     @Override
-    public void afterResponse(Channel clientChannel, Channel proxyChannel, HttpResponse httpResponse, InterceptotPipeline pipeline) throws Exception {
+    public final void afterResponse(Channel clientChannel, Channel proxyChannel, HttpResponse httpResponse, InterceptotPipeline pipeline) throws Exception {
         if (pipeline.getHttpRequest() instanceof FullHttpRequest) {
             if (clientChannel.pipeline().get("decompress") != null) {
                 clientChannel.pipeline().remove("decompress");

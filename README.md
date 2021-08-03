@@ -91,27 +91,18 @@ public class MyResponseInterceptor extends DefaultResponseInterceptor {
 ### 3、域名转发
 
 ```java
-public class ForwardInterceptor extends DefaultRequestInterceptor {
+public class ForwardInterceptor extends DefaultForwardInterceptor {
 
     @Override
     public void beforeRequest(Channel clientChannel, HttpRequest httpRequest, InterceptotPipeline pipeline) throws Exception {
-        if (MatchUtil.matchHost(httpRequest, "123.com")) {
-            pipeline.getRequestInfo().setHost("456.com");
+        if (MatchUtil.matchHost(httpRequest, "www.123.com")) {
+            pipeline.getRequestInfo().setHost("www.456.com");
             pipeline.getRequestInfo().setPort(80);
             pipeline.getRequestInfo().setHttps(false);
         }
         pipeline.beforeRequest(clientChannel, httpRequest);
     }
 
-    @Override
-    public boolean match(HttpRequest httpRequest, InterceptotPipeline pipeline) {
-        return false;
-    }
-
-    @Override
-    public void handleRequest(FullHttpRequest httpRequest, InterceptotPipeline pipeline) {
-
-    }
 }
 ```
 ### 4、MQTT信息捕获分析（待实现）

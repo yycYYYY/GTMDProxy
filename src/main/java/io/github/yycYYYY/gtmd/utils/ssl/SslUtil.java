@@ -1,4 +1,4 @@
-package com.gtmd.proxy.utils;
+package io.github.yycYYYY.gtmd.utils.ssl;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;

@@ -1,6 +1,6 @@
-package com.gtmd.proxy.utils;
+package io.github.yycYYYY.gtmd.utils;
 
-import com.gtmd.proxy.model.RequestInfo;
+import io.github.yycYYYY.gtmd.model.RequestInfo;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;

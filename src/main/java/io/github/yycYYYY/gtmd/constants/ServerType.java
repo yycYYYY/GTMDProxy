@@ -1,4 +1,4 @@
-package com.gtmd.proxy.constants;
+package io.github.yycYYYY.gtmd.constants;
 
 public enum ServerType {
     HTTP,

@@ -1,9 +1,10 @@
-package com.gtmd.proxy.handler;
+package io.github.yycYYYY.gtmd.handler;
 
-import com.gtmd.proxy.constants.ServerType;
-import com.gtmd.proxy.model.ProxyInfo;
-import com.gtmd.proxy.model.RequestInfo;
-import com.gtmd.proxy.utils.RequestUtil;
+
+import io.github.yycYYYY.gtmd.interceptor.InterceptorInitializer;
+import io.github.yycYYYY.gtmd.model.ProxyInfo;
+import io.github.yycYYYY.gtmd.model.RequestInfo;
+import io.github.yycYYYY.gtmd.utils.RequestUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -21,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.util.Deque;
 
 
-
 public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(HttpProxyServerHandler.class);
 
@@ -30,6 +30,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
     private int port;
     private Deque<Object> pendingQueue;
     private ProxyInfo proxyInfo;
+    private InterceptorInitializer interceptorInitializer;
     private boolean isConnect;
     private RequestInfo requestInfo;
 
@@ -37,13 +38,21 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             new HttpResponseStatus(200, "Connection established"));
     public final static String CONNECT_METHOD_NAME = "CONNECT";
 
+    public HttpProxyServerHandler(ProxyInfo proxyInfo, InterceptorInitializer interceptorInitializer) {
+        this.proxyInfo = proxyInfo;
+        this.interceptorInitializer = interceptorInitializer;
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         logger.debug("[HttpProxyHandler]");
         if (msg instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) msg;
 
+            logger.debug("uri:{}, method:{}",httpRequest.uri(),httpRequest.method());
+
             requestInfo = RequestUtil.getRequestInfoByAttr(ctx.channel());
+            logger.debug("host:{}, port:{}, isHttp:{}",requestInfo.getHost(),requestInfo.getPort(),requestInfo.isHttps());
             if (requestInfo == null) {
 
                 requestInfo = RequestUtil.getRequestInfo(httpRequest);
@@ -59,10 +68,11 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
             if (CONNECT_METHOD_NAME.equalsIgnoreCase(methodName)){
                 handleConnectProto(ctx);
                 ReferenceCountUtil.release(msg);
+                logger.debug("connect success!");
                 return;
             }
-
-
+            //注意这里的赋值位置可能有问题
+            proxyInfo.setRequestInfo(requestInfo);
 
         }else if (msg instanceof HttpContent){
             //处理HttpContent
@@ -74,7 +84,6 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("[do ssl hands]");
             }
         }
-
 
         //TODO： proxyInfo缺少初始化
         handleHttpProto(ctx.channel(), msg, proxyInfo);
@@ -105,14 +114,14 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (cf == null){
 
             ProxyHandler proxyHandler = buildProxyHandler(proxyInfo);
-            Bootstrap b = new Bootstrap();
+            Bootstrap bootstrap = new Bootstrap();
 
-            b
-                    .group(channel.eventLoop())
+            bootstrap.group(channel.eventLoop())
                     .channel(channel.getClass())
                     .handler(proxyHandler);
 
-            cf = b.connect(requestInfo.getHost(), requestInfo.getPort());
+            cf = bootstrap.connect(requestInfo.getHost(), requestInfo.getPort());
+
             cf.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     future.channel().writeAndFlush(msg);
@@ -159,7 +168,7 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
                 break;
 
             default:
-                throw new RuntimeException("不支持的协议");
+                throw new RuntimeException("[unknown protocol]不支持的协议");
         }
         return proxyHandler;
     }

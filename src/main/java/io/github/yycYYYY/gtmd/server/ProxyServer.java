@@ -1,8 +1,8 @@
-package com.gtmd.proxy.server;
+package io.github.yycYYYY.gtmd.server;
 
-import com.gtmd.proxy.handler.HttpProxyServerHandler;
-import com.gtmd.proxy.handler.ProxyChannelInitializer;
-import com.gtmd.proxy.model.ProxyInfo;
+import io.github.yycYYYY.gtmd.interceptor.InterceptorInitializer;
+import io.github.yycYYYY.gtmd.model.ProxyInfo;
+import io.github.yycYYYY.gtmd.handler.HttpProxyServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -20,6 +20,13 @@ import org.slf4j.LoggerFactory;
 public class ProxyServer {
 
     private final static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+
+    private InterceptorInitializer interceptorInitializer;
+
+    public ProxyServer interceptorInitializer(InterceptorInitializer interceptorInitializer){
+        this.interceptorInitializer = interceptorInitializer;
+        return this;
+    }
 
     private void init(){
 
@@ -45,7 +52,7 @@ public class ProxyServer {
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline().addLast("httpCodec", new HttpServerCodec());
                             ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536));
-                            ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler(proxyInfo));
+                            ch.pipeline().addLast("httpHandler", new HttpProxyServerHandler(proxyInfo, interceptorInitializer));
                         }
                     });
 

@@ -1,6 +1,6 @@
 package com.gtmd.proxy.handler;
 
-import com.gtmd.proxy.constants.ProtoName;
+import com.gtmd.proxy.constants.ServerType;
 import com.gtmd.proxy.model.ProxyInfo;
 import com.gtmd.proxy.model.RequestInfo;
 import com.gtmd.proxy.utils.RequestUtil;
@@ -146,15 +146,15 @@ public class HttpProxyServerHandler extends ChannelInboundHandlerAdapter {
         ProxyHandler proxyHandler;
         InetSocketAddress inetSocketAddress = new InetSocketAddress(proxyInfo.getRequestInfo().getHost(), proxyInfo.getRequestInfo().getPort());
         switch (proxyInfo.getProxyType()){
-            case ProtoName.HTTP:
+            case HTTP:
                 proxyHandler = new HttpProxyHandler(inetSocketAddress);
                 break;
 
-            case ProtoName.SOCKET4:
+            case SOCKET4:
                 proxyHandler = new Socks4ProxyHandler(inetSocketAddress);
                 break;
 
-            case ProtoName.SOCKET5:
+            case SOCKET5:
                 proxyHandler = new Socks5ProxyHandler(inetSocketAddress);
                 break;
 

@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class InterceptotPipeline implements Iterable<ProxyInterceptor> {
     private List<ProxyInterceptor> interceptors;

@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public abstract class DefaultResponseInterceptor implements ProxyInterceptor {
 

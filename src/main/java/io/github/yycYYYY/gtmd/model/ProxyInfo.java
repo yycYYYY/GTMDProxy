@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 
 public class ProxyInfo implements Serializable {

@@ -12,6 +12,9 @@ import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.nio.charset.Charset;
 
+/**
+ * @author yyc
+ */
 public class HttpProxyClientHandler extends ChannelInboundHandlerAdapter {
     private Channel clientChannel;
 

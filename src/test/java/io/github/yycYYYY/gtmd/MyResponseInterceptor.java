@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class MyResponseInterceptor extends DefaultResponseInterceptor {
     @Override

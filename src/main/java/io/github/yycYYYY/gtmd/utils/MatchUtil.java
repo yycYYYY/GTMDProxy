@@ -5,14 +5,16 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.AsciiString;
 
+import java.util.Objects;
+
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class MatchUtil {
 
     public static boolean matchHost(HttpRequest httpRequest, String expectHost){
         String host = httpRequest.headers().get(HttpHeaderNames.HOST);
-        return host == expectHost;
+        return Objects.equals(host, expectHost);
     }
 
     public static boolean matchPort(HttpRequest httpRequest, String expectHost){

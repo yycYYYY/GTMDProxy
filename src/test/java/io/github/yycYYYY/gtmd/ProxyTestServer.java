@@ -5,7 +5,7 @@ import io.github.yycYYYY.gtmd.interceptor.InterceptotPipeline;
 import io.github.yycYYYY.gtmd.server.ProxyServer;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class ProxyTestServer {
     public static void main(String[] args) {

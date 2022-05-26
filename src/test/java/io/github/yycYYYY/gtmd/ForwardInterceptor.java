@@ -7,7 +7,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class ForwardInterceptor extends DefaultForwardInterceptor {
 

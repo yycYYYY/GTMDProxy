@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.*;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public abstract class DefaultRequestInterceptor implements ProxyInterceptor {
 

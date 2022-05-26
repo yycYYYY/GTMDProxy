@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 
 /**
- * @Author yuyongchao
+ * @Author yyc
  **/
 public class MyRequestInterceptor extends DefaultRequestInterceptor {
     @Override

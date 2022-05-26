@@ -9,7 +9,7 @@
 </div>
 
 ## 一、工具介绍
-GTMD Proxy是一个使用netty编写的HTTP代理工具，支持HTTP、HTTPS、Socket、MQTT等协议的代理，支持HTTP、HTTPS请求响应报文的捕获分析、篡改、转发等功能。
+GTMD Proxy是一个使用Netty编写的HTTP代理工具，支持HTTP、HTTPS、Socket、MQTT等协议的代理，支持HTTP、HTTPS请求响应报文的捕获分析、篡改、转发等功能。
 
 ## 二、使用方法
 ### 1、添加依赖

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProxyServer {
 
-    private final static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
     private InterceptorInitializer interceptorInitializer;
 
@@ -62,6 +62,7 @@ public class ProxyServer {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
